@@ -4,7 +4,6 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 type AppConfig struct {
@@ -15,33 +14,30 @@ type AppConfig struct {
 }
 
 func GetAppConfigs() AppConfig {
-	env := os.Getenv("environment")
-	if env == "" {
-		log.Fatalf("Failed to read environment config [%s]", env)
+	environment := os.Getenv("ENVIRONMENT")
+	if environment == "" {
+		log.Fatal("Failed to read ENVIRONMENT")
 	}
 
-	v := viper.New()
-	v.AutomaticEnv()
-	v.SetConfigType("yaml")
-	v.SetConfigName(env)
-	v.AddConfigPath("../../configs")
-	err := v.ReadInConfig()
-	if err != nil {
-		log.Fatalf("Failed to read config file, error: %s", err.Error())
+	dynamoTransactionTable := os.Getenv("DYNAMODB_TRANSACTION_TABLE")
+	if dynamoTransactionTable == "" {
+		log.Fatal("Failed to read DYNAMODB_TRANSACTION_TABLE")
 	}
 
-	appConfig := extractConfigVars(v)
-	appConfig.Environment = env
+	dynamoEndpoint := os.Getenv("DYNAMODB_TRANSACTION_ENDPOINT")
+	if dynamoEndpoint == "" {
+		log.Fatal("Failed to read DYNAMODB_TRANSACTION_ENDPOINT")
+	}
 
-	return appConfig
-}
+	dynamoRegion := os.Getenv("DYNAMODB_TRANSACTION_REGION")
+	if dynamoRegion == "" {
+		log.Fatal("Failed to read DYNAMODB_TRANSACTION_REGION")
+	}
 
-func extractConfigVars(v *viper.Viper) AppConfig {
-	appConfig := AppConfig{}
-
-	appConfig.DynamoTransactionTable = v.GetString("dynamo.transactionTable")
-	appConfig.DynamoEndpoint = v.GetString("dynamo.endpoint")
-	appConfig.DynamoRegion = v.GetString("dynamo.region")
-
-	return appConfig
+	return AppConfig{
+		Environment:            environment,
+		DynamoTransactionTable: dynamoTransactionTable,
+		DynamoEndpoint:         dynamoEndpoint,
+		DynamoRegion:           dynamoRegion,
+	}
 }
