@@ -1,4 +1,0 @@
-dynamo:
-  transactionTable: fm-dev-transaction-table
-  endpoint: dynamodb.us-east-1.amazonaws.com
-  region: us-east-1

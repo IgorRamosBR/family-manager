@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/IgorRamos/fm-create-transaction/internal/repositories"
+	"github.com/IgorRamos/fm-transaction/internal/repositories"
 	log "github.com/sirupsen/logrus"
 )
 

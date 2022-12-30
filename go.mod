@@ -1,4 +1,4 @@
-module github.com/IgorRamos/fm-create-transaction
+module github.com/IgorRamos/fm-transaction
 
 go 1.18
 

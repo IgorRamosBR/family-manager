@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/IgorRamos/fm-create-transaction/internal/models"
+	"github.com/IgorRamos/fm-transaction/internal/models"
 	"github.com/aws/aws-lambda-go/events"
 )
 

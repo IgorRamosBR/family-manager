@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/IgorRamos/fm-create-transaction/internal/repositories"
+	"github.com/IgorRamos/fm-transaction/internal/repositories"
 	"github.com/aws/aws-lambda-go/events"
 )
 
