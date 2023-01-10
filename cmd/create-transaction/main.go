@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/IgorRamos/fm-create-transaction/configs"
-	"github.com/IgorRamos/fm-create-transaction/internal/handlers"
-	"github.com/IgorRamos/fm-create-transaction/internal/repositories"
+	"github.com/IgorRamos/fm-transaction/configs"
+	"github.com/IgorRamos/fm-transaction/internal/handlers"
+	"github.com/IgorRamos/fm-transaction/internal/repositories"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"

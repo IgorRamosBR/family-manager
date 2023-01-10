@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 
-	"github.com/IgorRamos/fm-create-transaction/internal/models"
+	"github.com/IgorRamos/fm-transaction/internal/models"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
