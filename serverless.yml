@@ -50,6 +50,17 @@ functions:
           method: get
           cors: true
 
+  report:
+    handler: bin/report
+    package:
+      include:
+        - ./bin/report
+    events:
+      - http:
+          path: report
+          method: get
+          cors: true
+
 resources:
   Resources:
     FmTransactionTable:

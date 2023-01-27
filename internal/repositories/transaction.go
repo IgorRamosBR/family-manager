@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/IgorRamos/fm-transaction/internal/models"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -43,7 +44,7 @@ func NewTransactionRepository(db *dynamodb.Client, tableName string) Transaction
 
 func (r transactionRepository) CreateTransaction(transaction models.Transaction) error {
 	transaction.TransactionId = uuid.New().String()
-	transaction.CategorySubcategoryId = transaction.Category + transaction.Subcatetegory + transaction.TransactionId
+	transaction.CategorySubcategoryId = fmt.Sprintf("%s#%s", transaction.Category, transaction.TransactionId)
 	transactionDynamo, err := attributevalue.MarshalMap(transaction)
 	if err != nil {
 		log.Errorf("Failed to marshall new transaction item: %s", err)
