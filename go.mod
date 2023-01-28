@@ -2,7 +2,10 @@ module github.com/IgorRamos/fm-transaction
 
 go 1.18
 
-require github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.13.27 // indirect
+require (
+	github.com/Rhymond/go-money v1.0.9 // indirect
+	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.13.27 // indirect
+)
 
 require (
 	github.com/aws/aws-lambda-go v1.35.0
