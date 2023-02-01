@@ -7,7 +7,8 @@ import (
 	"net/http"
 
 	"github.com/IgorRamos/fm-transaction/configs"
-	"github.com/IgorRamos/fm-transaction/internal/handlers"
+	categoryHandler "github.com/IgorRamos/fm-transaction/internal/handlers/category"
+	transactionHandler "github.com/IgorRamos/fm-transaction/internal/handlers/transaction"
 	"github.com/IgorRamos/fm-transaction/internal/repositories"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -15,7 +16,8 @@ import (
 )
 
 type API struct {
-	handler handlers.TransactionHandler
+	transactionHandler transactionHandler.TransactionHandler
+	categoryHandler    categoryHandler.CategoryHandler
 }
 
 func main() {
@@ -29,12 +31,16 @@ func main() {
 	}
 
 	db := dynamodb.NewFromConfig(cfg)
+	categoryRepository := repositories.NewCategoryRepository(db, appConfig.DynamoCategoryTable)
+	categoryHandler := categoryHandler.NewCategoryHandler(categoryRepository)
 	transactionRepository := repositories.NewTransactionRepository(db, appConfig.DynamoTransactionTable)
-	transactionHandler := handlers.NewTransactionHandler(transactionRepository)
-	api := API{transactionHandler}
+	transactionHandler := transactionHandler.NewTransactionHandler(transactionRepository, categoryRepository)
+
+	api := API{transactionHandler: transactionHandler, categoryHandler: categoryHandler}
 
 	http.HandleFunc("/transactions", api.handleTransactions)
 	http.HandleFunc("/report", api.handleReport)
+	http.HandleFunc("/categories", api.handleCategories)
 
 	err = http.ListenAndServe(":3333", nil)
 	if err != nil {
@@ -45,7 +51,7 @@ func main() {
 func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		req := createRequest(r)
-		resp, err := h.handler.GetTransactions(req)
+		resp, err := h.transactionHandler.GetTransactions(req)
 		if err != nil {
 			io.WriteString(w, err.Error())
 			return
@@ -55,7 +61,7 @@ func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
 		req := createRequest(r)
-		resp, err := h.handler.CreateTransaction(req)
+		resp, err := h.transactionHandler.CreateTransaction(req)
 		if err != nil {
 			io.WriteString(w, err.Error())
 			return
@@ -67,7 +73,28 @@ func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
 func (h API) handleReport(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		req := createRequest(r)
-		resp, err := h.handler.ReportTransactions(req)
+		resp, err := h.transactionHandler.ReportTransactions(req)
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+		io.WriteString(w, resp.Body)
+	}
+}
+
+func (h API) handleCategories(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		req := createRequest(r)
+		resp, err := h.categoryHandler.GetCategories(req)
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+		io.WriteString(w, resp.Body)
+	}
+	if r.Method == "POST" {
+		req := createRequest(r)
+		resp, err := h.categoryHandler.CreateCategory(req)
 		if err != nil {
 			io.WriteString(w, err.Error())
 			return

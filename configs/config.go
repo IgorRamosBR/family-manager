@@ -9,6 +9,7 @@ import (
 type AppConfig struct {
 	Environment            string
 	DynamoTransactionTable string
+	DynamoCategoryTable    string
 	DynamoEndpoint         string
 	DynamoRegion           string
 }
@@ -24,6 +25,11 @@ func GetAppConfigs() AppConfig {
 		log.Fatal("Failed to read DYNAMODB_TRANSACTION_TABLE")
 	}
 
+	dynamoCategoryTable := os.Getenv("DYNAMODB_CATEGORY_TABLE")
+	if dynamoCategoryTable == "" {
+		log.Fatal("Failed to read DYNAMODB_CATEGORY_TABLE")
+	}
+
 	dynamoEndpoint := os.Getenv("DYNAMODB_TRANSACTION_ENDPOINT")
 	if dynamoEndpoint == "" {
 		log.Fatal("Failed to read DYNAMODB_TRANSACTION_ENDPOINT")
@@ -37,6 +43,7 @@ func GetAppConfigs() AppConfig {
 	return AppConfig{
 		Environment:            environment,
 		DynamoTransactionTable: dynamoTransactionTable,
+		DynamoCategoryTable:    dynamoCategoryTable,
 		DynamoEndpoint:         dynamoEndpoint,
 		DynamoRegion:           dynamoRegion,
 	}

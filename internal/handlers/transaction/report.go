@@ -9,6 +9,7 @@ import (
 	"github.com/IgorRamos/fm-transaction/internal/repositories"
 	"github.com/Rhymond/go-money"
 	"github.com/aws/aws-lambda-go/events"
+	log "github.com/sirupsen/logrus"
 )
 
 type transactionsQueryResult struct {
@@ -18,18 +19,22 @@ type transactionsQueryResult struct {
 
 func (h TransactionHandler) ReportTransactions(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	periods := strings.Split(req.QueryStringParameters["periods"], ",")
-	if len(periods) < 0 {
+	if len(periods) < 0 || (len(periods) == 1 && periods[0] == "") {
 		return events.APIGatewayProxyResponse{
 			Body:       "Query Parameter [periods] required",
 			StatusCode: http.StatusBadRequest,
 		}, nil
 	}
 
+	categories, err := h.categoryRepository.GetAllCategories()
+	if err != nil {
+		log.Errorf("failed to get categories, error: [%w]", err)
+	}
+
 	in := h.getPeriods(periods)
 	results := h.getTransactionsResult(in)
 	transactions := h.splitTransactions(results)
-	categories := h.categorizeTransactions(transactions)
-	report := models.Report{Categories: categories}
+	report := h.categorizeTransactions(transactions, categories)
 
 	responseBody, err := toJSON(report)
 	if err != nil {
@@ -95,20 +100,27 @@ func (h TransactionHandler) splitTransactions(transactions chan transactionsQuer
 	return out
 }
 
-func (h TransactionHandler) categorizeTransactions(transactions chan models.Transaction) map[string]models.CategoryReport {
-	report := make(map[string]models.CategoryReport)
+func (h TransactionHandler) categorizeTransactions(transactions chan models.Transaction, categories []models.Category) []models.CategoryReport {
+	categoryReport := make(map[string]models.CategoryReport)
 	mu := sync.Mutex{}
 
+	for _, cat := range categories {
+		categoryReport[cat.Name] = models.CategoryReport{Name: cat.Name, Values: map[string]float64{}}
+	}
+
 	for t := range transactions {
-		if category, ok := report[t.Category]; ok {
+		if category, ok := categoryReport[t.Category]; ok {
 			mu.Lock()
-			report[t.Category] = mergeTransaction(category, t)
+			categoryReport[t.Category] = mergeTransaction(category, t)
 			mu.Unlock()
 			continue
 		}
-		mu.Lock()
-		report[t.Category] = createCategoryReport(t)
-		mu.Unlock()
+		log.Warnf("category [%s] from the transaction [%s] is not present in category list", t.Category, t.TransactionId)
+	}
+
+	report := []models.CategoryReport{}
+	for _, cat := range categories {
+		report = append(report, categoryReport[cat.Name])
 	}
 
 	return report

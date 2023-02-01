@@ -14,7 +14,7 @@ const (
 
 type Transaction struct {
 	TransactionId         string        `json:"transactionId" dynamo:"TransactionId"`
-	CategorySubcategoryId string        `json:"-" dynamo:"CategorySubcategoryId"`
+	CategoryTransactionId string        `json:"-" dynamo:"CategoryTransactionId"`
 	Category              string        `json:"category" dynamo:"Category"`
 	Value                 float64       `json:"value" dynamo:"Value"`
 	Description           string        `json:"description" dynamo:"Description"`

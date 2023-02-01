@@ -11,7 +11,8 @@ provider:
   runtime: go1.x
   environment:
     ENVIRONMENT: ${opt:stage, self:provider.stage}
-    DYNAMODB_TRANSACTION_TABLE: ${self:service}-table-${opt:stage, self:provider.stage}
+    DYNAMODB_TRANSACTION_TABLE: fm-transaction-table-${opt:stage, self:provider.stage}
+    DYNAMODB_CATEGORY_TABLE: fm-category-table-${opt:stage, self:provider.stage}
     DYNAMODB_TRANSACTION_REGION: us-east-1
     DYNAMODB_TRANSACTION_ENDPOINT: ${self:service}-${opt:stage, self:provider.stage}
   iam:
@@ -25,45 +26,77 @@ provider:
             - dynamodb:PutItem
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
-          Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.DYNAMODB_TRANSACTION_TABLE}"
+          Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/fm-*"
 
 functions:
-  create:
-    handler: bin/create
+  create-transaction:
+    handler: bin/create-transaction
     package:
       include:
-        - ./bin/create
+        - ./bin/create-transaction
     events:
       - http:
           path: transactions
           method: post
           cors: true
 
-  list:
-    handler: bin/list
+  list-transactions:
+    handler: bin/list-transactions
     package:
       include:
-        - ./bin/list
+        - ./bin/list-transactions
     events:
       - http:
           path: transactions
           method: get
           cors: true
 
-  report:
-    handler: bin/report
+  report-transactions:
+    handler: bin/report-transactions
     package:
       include:
-        - ./bin/report
+        - ./bin/report-transactions
     events:
       - http:
           path: report
           method: get
           cors: true
 
+  create-category:
+    handler: bin/create-category
+    package:
+      include:
+        - ./bin/create-category
+    events:
+      - http:
+          path: categories
+          method: post
+          cors: true
+
+  list-category:
+    handler: bin/list-categories
+    package:
+      include:
+        - ./bin/list-categories
+    events:
+      - http:
+          path: categories
+          method: get
+          cors: true
+  
+  order-category:
+    handler: bin/order-categories
+    package:
+      include:
+        - ./bin/order-categories
+    events:
+      - http:
+          path: categories/order
+          method: put
+          cors: true
 resources:
   Resources:
-    FmTransactionTable:
+    FmTransactionDynamoTable:
       Type: 'AWS::DynamoDB::Table'
       DeletionPolicy: Retain
       Properties:
@@ -72,17 +105,40 @@ resources:
             AttributeName: MonthYear
             AttributeType: S
           -
-            AttributeName: CategorySubcategoryId
+            AttributeName: CategoryTransactionId
             AttributeType: S
         KeySchema:
           -
             AttributeName: MonthYear
             KeyType: HASH
           -
-            AttributeName: CategorySubcategoryId
+            AttributeName: CategoryTransactionId
             KeyType: RANGE
         BillingMode: PROVISIONED
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:provider.environment.DYNAMODB_TRANSACTION_TABLE}
+    FmCategoryDynamoTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: Name
+            AttributeType: S
+          -
+            AttributeName: Priority
+            AttributeType: N
+        KeySchema:
+          -
+            AttributeName: Name
+            KeyType: HASH
+          -
+            AttributeName: Priority
+            KeyType: RANGE
+        BillingMode: PROVISIONED
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.DYNAMODB_CATEGORY_TABLE}

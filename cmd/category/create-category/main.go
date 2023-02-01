@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/IgorRamos/fm-transaction/configs"
-	"github.com/IgorRamos/fm-transaction/internal/handlers"
+	handlers "github.com/IgorRamos/fm-transaction/internal/handlers/category"
 	"github.com/IgorRamos/fm-transaction/internal/repositories"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -23,8 +23,8 @@ func main() {
 	}
 
 	db := dynamodb.NewFromConfig(cfg)
-	transactionRepository := repositories.NewTransactionRepository(db, appConfig.DynamoTransactionTable)
-	transactionHandler := handlers.NewTransactionHandler(transactionRepository)
+	categoryRepository := repositories.NewCategoryRepository(db, appConfig.DynamoCategoryTable)
+	categoryHandler := handlers.NewCategoryHandler(categoryRepository)
 
-	lambda.Start(transactionHandler.ReportTransactions)
+	lambda.Start(categoryHandler.CreateCategory)
 }
