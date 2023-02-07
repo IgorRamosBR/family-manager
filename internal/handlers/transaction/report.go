@@ -26,15 +26,10 @@ func (h TransactionHandler) ReportTransactions(req events.APIGatewayProxyRequest
 		}, nil
 	}
 
-	categories, err := h.categoryRepository.GetAllCategories()
-	if err != nil {
-		log.Errorf("failed to get categories, error: [%w]", err)
-	}
-
 	in := h.getPeriods(periods)
 	results := h.getTransactionsResult(in)
 	transactions := h.splitTransactions(results)
-	report := h.categorizeTransactions(transactions, categories)
+	report := h.categorizeTransactions(transactions)
 
 	responseBody, err := toJSON(report)
 	if err != nil {
@@ -100,10 +95,11 @@ func (h TransactionHandler) splitTransactions(transactions chan transactionsQuer
 	return out
 }
 
-func (h TransactionHandler) categorizeTransactions(transactions chan models.Transaction, categories []models.Category) []models.CategoryReport {
+func (h TransactionHandler) categorizeTransactions(transactions chan models.Transaction) []models.CategoryReport {
 	categoryReport := make(map[string]models.CategoryReport)
 	mu := sync.Mutex{}
 
+	categories := h.getCategories()
 	for _, cat := range categories {
 		categoryReport[cat.Name] = models.CategoryReport{Name: cat.Name, Values: map[string]float64{}}
 	}
@@ -118,12 +114,56 @@ func (h TransactionHandler) categorizeTransactions(transactions chan models.Tran
 		log.Warnf("category [%s] from the transaction [%s] is not present in category list", t.Category, t.TransactionId)
 	}
 
-	report := []models.CategoryReport{}
+	reportAll := []models.CategoryReport{}
 	for _, cat := range categories {
-		report = append(report, categoryReport[cat.Name])
+		reportAll = append(reportAll, categoryReport[cat.Name])
 	}
 
-	return report
+	parentTotal := make(map[string][]float64)
+	for _, rep := range reportAll {
+		if total, ok := parentTotal[rep.GetParentCategory()]; ok {
+			newTotal := append(total, rep.Total)
+			parentTotal[rep.GetParentCategory()] = newTotal
+			continue
+		}
+		parentTotal[rep.GetParentCategory()] = []float64{rep.Total}
+	}
+
+	reportWithParent := []models.CategoryReport{}
+	categoryProcessed := make(map[string]bool)
+	for _, rep := range reportAll {
+		if isProcessed, ok := categoryProcessed[rep.GetParentCategory()]; !ok || !isProcessed {
+			parent := models.CategoryReport{
+				Name:     rep.GetParentCategory(),
+				Total:    sumTotal(parentTotal[rep.GetParentCategory()]),
+				IsParent: true,
+				Values:   map[string]float64{},
+			}
+			reportWithParent = append(reportWithParent, parent)
+			categoryProcessed[rep.GetParentCategory()] = true
+		}
+		reportWithParent = append(reportWithParent, rep)
+	}
+
+	return reportWithParent
+}
+
+func (h TransactionHandler) getCategories() []models.Category {
+	categories, err := h.categoryRepository.GetAllCategories()
+	if err != nil {
+		log.Errorf("failed to get categories, error: [%w]", err)
+	}
+
+	return categories
+}
+
+func sumTotal(values []float64) float64 {
+	sum := 0.0
+	for _, total := range values {
+		newSum, _ := money.NewFromFloat(sum, money.BRL).Add(money.NewFromFloat(total, money.BRL))
+		sum = newSum.AsMajorUnits()
+	}
+	return sum
 }
 
 func mergeTransaction(category models.CategoryReport, transaction models.Transaction) models.CategoryReport {

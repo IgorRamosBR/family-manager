@@ -15,6 +15,8 @@ provider:
     DYNAMODB_CATEGORY_TABLE: fm-category-table-${opt:stage, self:provider.stage}
     DYNAMODB_TRANSACTION_REGION: us-east-1
     DYNAMODB_TRANSACTION_ENDPOINT: ${self:service}-${opt:stage, self:provider.stage}
+    AUTH0_DOMAIN: dev-kovicniqndmbavnk.us.auth0.com
+    AUTH0_AUDIENCE: FinancialManagerAPI
   iam:
     role:
       statements:
@@ -29,6 +31,12 @@ provider:
           Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/fm-*"
 
 functions:
+  auth:
+    handler: bin/auth
+    package:
+      include:
+        - ./bin/create-transaction
+
   create-transaction:
     handler: bin/create-transaction
     package:
@@ -38,6 +46,7 @@ functions:
       - http:
           path: transactions
           method: post
+          authorizer: auth
           cors: true
 
   list-transactions:
@@ -49,6 +58,7 @@ functions:
       - http:
           path: transactions
           method: get
+          authorizer: auth
           cors: true
 
   report-transactions:
@@ -60,6 +70,7 @@ functions:
       - http:
           path: report
           method: get
+          authorizer: auth
           cors: true
 
   create-category:
@@ -71,6 +82,7 @@ functions:
       - http:
           path: categories
           method: post
+          authorizer: auth
           cors: true
 
   list-category:
@@ -82,6 +94,7 @@ functions:
       - http:
           path: categories
           method: get
+          authorizer: auth
           cors: true
   
   order-category:
@@ -93,6 +106,7 @@ functions:
       - http:
           path: categories/order
           method: put
+          authorizer: auth
           cors: true
 resources:
   Resources:

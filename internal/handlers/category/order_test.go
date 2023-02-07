@@ -15,7 +15,7 @@ import (
 func TestUpdateCategoryListOrder(t *testing.T) {
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion("us-east-1"),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("AKIARKEFHTPIZXGLDHWD", "2DWuJ3ydZ8MZvVLPud+IqFcozuWUDbZf/3NkcEri", "")),
+		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("", "", "")),
 	)
 	if err != nil {
 		log.Fatal("Failed to create aws client, error: ", err.Error())

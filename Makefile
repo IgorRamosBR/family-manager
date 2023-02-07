@@ -1,4 +1,5 @@
 build:
+	env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/auth cmd/auth/main.go
 	env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/create-transaction cmd/transaction/create-transaction/main.go
 	env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/list-transactions cmd/transaction/list-transactions/main.go
 	env GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bin/report-transactions cmd/transaction/report-transactions/main.go
