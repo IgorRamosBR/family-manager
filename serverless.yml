@@ -1,9 +1,9 @@
-service: fm-transaction
+service: fm-finances
 
-app: fm-transaction
+app: fm-finances
 org: igorpestana
 
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 provider:
   name: aws
@@ -15,8 +15,8 @@ provider:
     DYNAMODB_CATEGORY_TABLE: fm-category-table-${opt:stage, self:provider.stage}
     DYNAMODB_TRANSACTION_REGION: us-east-1
     DYNAMODB_TRANSACTION_ENDPOINT: ${self:service}-${opt:stage, self:provider.stage}
-    AUTH0_DOMAIN: dev-kovicniqndmbavnk.us.auth0.com
-    AUTH0_AUDIENCE: FinancialManagerAPI
+    AUTH0_DOMAIN: ${env:AUTH0_DOMAIN}
+    AUTH0_AUDIENCE: ${env:AUTH0_AUDIENCE}
   iam:
     role:
       statements:
@@ -96,7 +96,7 @@ functions:
           method: get
           authorizer: auth
           cors: true
-  
+
   order-category:
     handler: bin/order-categories
     package:
@@ -109,24 +109,29 @@ functions:
           authorizer: auth
           cors: true
 resources:
+  Mappings:
+    DomainMap:
+      dev:
+        domain: dev.controlefamiliar.com
+      staging:
+        domain: staging.controlefamiliar.com
+      prod:
+        domain: www.controlefamiliar.com
+
   Resources:
     FmTransactionDynamoTable:
-      Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
+      Type: "AWS::DynamoDB::Table"
+      DeletionPolicy: Delete
       Properties:
         AttributeDefinitions:
-          -
-            AttributeName: MonthYear
+          - AttributeName: MonthYear
             AttributeType: S
-          -
-            AttributeName: CategoryTransactionId
+          - AttributeName: CategoryTransactionId
             AttributeType: S
         KeySchema:
-          -
-            AttributeName: MonthYear
+          - AttributeName: MonthYear
             KeyType: HASH
-          -
-            AttributeName: CategoryTransactionId
+          - AttributeName: CategoryTransactionId
             KeyType: RANGE
         BillingMode: PROVISIONED
         ProvisionedThroughput:
@@ -134,25 +139,125 @@ resources:
           WriteCapacityUnits: 1
         TableName: ${self:provider.environment.DYNAMODB_TRANSACTION_TABLE}
     FmCategoryDynamoTable:
-      Type: 'AWS::DynamoDB::Table'
-      DeletionPolicy: Retain
+      Type: "AWS::DynamoDB::Table"
+      DeletionPolicy: Delete
       Properties:
         AttributeDefinitions:
-          -
-            AttributeName: Name
+          - AttributeName: Name
             AttributeType: S
-          -
-            AttributeName: Priority
+          - AttributeName: Priority
             AttributeType: N
         KeySchema:
-          -
-            AttributeName: Name
+          - AttributeName: Name
             KeyType: HASH
-          -
-            AttributeName: Priority
+          - AttributeName: Priority
             KeyType: RANGE
         BillingMode: PROVISIONED
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:provider.environment.DYNAMODB_CATEGORY_TABLE}
+    FmDashboardFrontendBucket:
+      Type: "AWS::S3::Bucket"
+      Properties:
+        BucketName:
+          !FindInMap [
+            DomainMap,
+            "${opt:stage, self:provider.stage}",
+            domain,
+          ]
+        AccessControl: PublicRead
+        WebsiteConfiguration:
+          IndexDocument: index.html
+          ErrorDocument: error.html
+    FmDashboardFrontendBucketPolicy:
+      Type: "AWS::S3::BucketPolicy"
+      Properties:
+        Bucket: !Ref FmDashboardFrontendBucket
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Action:
+                - "s3:GetObject"
+              Effect: Allow
+              Resource: !Join
+                - ""
+                - - "arn:aws:s3:::"
+                  - !Ref FmDashboardFrontendBucket
+                  - /*
+              Principal: "*"
+    FmDashboardFrontendCloudFrontDistribution:
+      Type: "AWS::CloudFront::Distribution"
+      Properties:
+        DistributionConfig:
+          Origins:
+            - CustomOriginConfig:
+                HTTPPort: 80
+                HTTPSPort: 443
+                OriginProtocolPolicy: http-only
+                OriginSSLProtocols:
+                  - TLSv1
+                  - TLSv1.1
+                  - TLSv1.2
+              DomainName: !Select [1, !Split ["//", !GetAtt FmDashboardFrontendBucket.WebsiteURL]]
+              Id:
+                !FindInMap [
+                  DomainMap,
+                  "${opt:stage, self:provider.stage}",
+                  domain,
+                ]
+          Enabled: true
+          DefaultRootObject: index.html
+
+          DefaultCacheBehavior:
+            ViewerProtocolPolicy: redirect-to-https
+            Compress: true
+            AllowedMethods:
+              - HEAD
+              - DELETE
+              - POST
+              - GET
+              - OPTIONS
+              - PUT
+              - PATCH
+            CachedMethods:
+              - GET
+              - HEAD
+            TargetOriginId:
+              !FindInMap [
+                DomainMap,
+                "${opt:stage, self:provider.stage}",
+                domain,
+              ]
+            MinTTL: 0
+            DefaultTTL: 86400
+            MaxTTL: 31536000
+
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+
+          CustomErrorResponses:
+            - ErrorCachingMinTTL: 3000
+              ErrorCode: 404
+              ResponseCode: 200
+              ResponsePagePath: "/index.html"
+
+          Aliases:
+            - !FindInMap [
+                DomainMap,
+                "${opt:stage, self:provider.stage}",
+                domain,
+              ]
+
+          Restrictions:
+            GeoRestriction:
+              RestrictionType: none
+
+          ViewerCertificate:
+            AcmCertificateArn: arn:aws:acm:us-east-1:090473733073:certificate/4fb33cbb-8966-4089-b40e-8e41e38d5c85
+            SslSupportMethod: sni-only
+        Tags:
+          - Key: env
+            Value: ${opt:stage, self:provider.stage}
