@@ -1,6 +1,6 @@
-service: fm-finances
+service: family-manager
 
-app: fm-finances
+app: family-manager
 org: igorpestana
 
 frameworkVersion: "3"
@@ -15,8 +15,7 @@ provider:
     DYNAMODB_CATEGORY_TABLE: fm-category-table-${opt:stage, self:provider.stage}
     DYNAMODB_TRANSACTION_REGION: us-east-1
     DYNAMODB_TRANSACTION_ENDPOINT: ${self:service}-${opt:stage, self:provider.stage}
-    AUTH0_DOMAIN: ${env:AUTH0_DOMAIN}
-    AUTH0_AUDIENCE: ${env:AUTH0_AUDIENCE}
+    
   iam:
     role:
       statements:
@@ -32,12 +31,17 @@ provider:
 
 functions:
   auth:
+    name: fm-${opt:stage, self:provider.stage}-auth
     handler: bin/auth
     package:
       include:
         - ./bin/create-transaction
+    environment:
+      AUTH0_DOMAIN: ${env:AUTH0_DOMAIN}
+      AUTH0_AUDIENCE: ${env:AUTH0_AUDIENCE}
 
-  create-transaction:
+  create-transactions:
+    name: fm-${opt:stage, self:provider.stage}-create-transactions
     handler: bin/create-transaction
     package:
       include:
@@ -50,6 +54,7 @@ functions:
           cors: true
 
   list-transactions:
+    name: fm-${opt:stage, self:provider.stage}-list-transactions
     handler: bin/list-transactions
     package:
       include:
@@ -62,6 +67,7 @@ functions:
           cors: true
 
   report-transactions:
+    name: fm-${opt:stage, self:provider.stage}-report-transactions
     handler: bin/report-transactions
     package:
       include:
@@ -73,11 +79,12 @@ functions:
           authorizer: auth
           cors: true
 
-  create-category:
-    handler: bin/create-category
+  create-categories:
+    name: fm-${opt:stage, self:provider.stage}-create-categories
+    handler: bin/create-categories
     package:
       include:
-        - ./bin/create-category
+        - ./bin/create-categories
     events:
       - http:
           path: categories
@@ -85,7 +92,8 @@ functions:
           authorizer: auth
           cors: true
 
-  list-category:
+  list-categories:
+    name: fm-${opt:stage, self:provider.stage}-list-categories
     handler: bin/list-categories
     package:
       include:
@@ -97,7 +105,8 @@ functions:
           authorizer: auth
           cors: true
 
-  order-category:
+  order-categories:
+    name: fm-${opt:stage, self:provider.stage}-order-categories
     handler: bin/order-categories
     package:
       include:
