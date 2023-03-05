@@ -35,7 +35,10 @@ functions:
     handler: bin/auth
     package:
       include:
-        - ./bin/create-transaction
+        - ./bin/auth
+      exclude:
+        - web/**
+      individually: true
     environment:
       AUTH0_DOMAIN: ${env:AUTH0_DOMAIN}
       AUTH0_AUDIENCE: ${env:AUTH0_AUDIENCE}
@@ -46,6 +49,9 @@ functions:
     package:
       include:
         - ./bin/create-transaction
+      exclude:
+        - web/**
+      individually: true
     events:
       - http:
           path: transactions
@@ -59,6 +65,9 @@ functions:
     package:
       include:
         - ./bin/list-transactions
+      exclude:
+        - web/**
+      individually: true
     events:
       - http:
           path: transactions
@@ -72,6 +81,9 @@ functions:
     package:
       include:
         - ./bin/report-transactions
+      exclude:
+        - web/**
+      individually: true
     events:
       - http:
           path: report
@@ -85,6 +97,9 @@ functions:
     package:
       include:
         - ./bin/create-categories
+      exclude:
+        - web/**
+      individually: true
     events:
       - http:
           path: categories
@@ -98,6 +113,9 @@ functions:
     package:
       include:
         - ./bin/list-categories
+      exclude:
+        - web/**
+      individually: true
     events:
       - http:
           path: categories
@@ -111,6 +129,9 @@ functions:
     package:
       include:
         - ./bin/order-categories
+      exclude:
+        - web/**
+      individually: true
     events:
       - http:
           path: categories/order
