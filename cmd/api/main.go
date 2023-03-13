@@ -56,6 +56,9 @@ func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, err.Error())
 			return
 		}
+		for k, v := range resp.Headers {
+			w.Header().Add(k, v)
+		}
 		io.WriteString(w, resp.Body)
 	}
 
@@ -65,6 +68,9 @@ func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			io.WriteString(w, err.Error())
 			return
+		}
+		for k, v := range resp.Headers {
+			w.Header().Add(k, v)
 		}
 		io.WriteString(w, resp.Body)
 	}

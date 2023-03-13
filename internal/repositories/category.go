@@ -15,7 +15,7 @@ import (
 
 type CategoryRepository interface {
 	CreateCategory(models.Category) error
-	GetCategoryByName(string) (models.Category, error)
+	GetCategory(string, int) (models.Category, error)
 	GetAllCategories() ([]models.Category, error)
 	UpdateCategoryListOrder([]models.Category) error
 }
@@ -53,14 +53,20 @@ func (r categoryRepository) CreateCategory(category models.Category) error {
 	return nil
 }
 
-func (r categoryRepository) GetCategoryByName(categoryName string) (models.Category, error) {
+func (r categoryRepository) GetCategory(categoryName string, priority int) (models.Category, error) {
 	categoryKey, err := attributevalue.Marshal(categoryName)
 	if err != nil {
-		log.Errorf("Failed to marshall categoryName: %s", err)
+		log.Errorf("Failed to marshall Name: %s", err)
 		return models.Category{}, err
 	}
 
-	key := map[string]types.AttributeValue{"categoryName": categoryKey}
+	priorityKey, err := attributevalue.Marshal(priority)
+	if err != nil {
+		log.Errorf("Failed to marshall Priority: %s", err)
+		return models.Category{}, err
+	}
+
+	key := map[string]types.AttributeValue{"Name": categoryKey, "Priority": priorityKey}
 	getItemInput := &dynamodb.GetItemInput{
 		Key:       key,
 		TableName: aws.String(r.tableName),
