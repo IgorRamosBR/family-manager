@@ -103,7 +103,7 @@ func (h TransactionHandler) categorizeTransactions(transactions chan models.Tran
 
 	categories := h.getCategories()
 	for _, cat := range categories {
-		transactionsByParentCategory[cat.GetParentCategory()] = models.CategoryReport{Name: cat.GetParentCategory(), Values: map[string]float64{}}
+		transactionsByParentCategory[cat.GetParentCategory()] = models.CategoryReport{Name: cat.GetParentCategory(), IsParent: true, Values: map[string]float64{}}
 		transactionsByCategory[cat.Name] = models.CategoryReport{Name: cat.Name, Values: map[string]float64{}}
 	}
 
