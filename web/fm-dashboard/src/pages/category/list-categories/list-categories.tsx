@@ -126,17 +126,13 @@ const mapToCategoryModel = (columns: DataType[]): CategoryModel[] => {
 export function CategoryList({data, isLoading, onChange}: Props) {
     const [categories, setCategories] = useState<DataType[]>(mapToDataType(data))
 
-    // useEffect(() => {
-    //     console.log(categories)
-    //     onChange(mapToCategoryModel(categories))
-    // }, [categories]);
-
     useEffect(() => {
         setCategories(mapToDataType(data))
     }, [data])
 
     const tableProps: TableProps<DataType> = {
         loading: isLoading,
+        pagination: false,
     };
 
     const components = {

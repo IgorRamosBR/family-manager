@@ -33,36 +33,78 @@ const columns: ColumnsType<DataType> = [
         title: getMonth(0),
         key: "month1",
         dataIndex: "month1",
+        render: (_, record) => {
+            if (record.isCategory) {
+                return (<span style={{ fontWeight: "bold", textTransform: "uppercase" }}>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(record.month1))}</span>)
+            }
+            return (<span>{new Intl.NumberFormat("pt-BR").format(Number(record.month1))}</span>)
+        }
     },
     {
         title: getMonth(1),
         key: "month2",
         dataIndex: "month2",
+        render: (_, record) => {
+            if (record.isCategory) {
+                return (<span style={{ fontWeight: "bold", textTransform: "uppercase" }}>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(record.month2))}</span>)
+                }
+            return (<span>{new Intl.NumberFormat("pt-BR").format(Number(record.month2))}</span>)
+        }
     },
     {
         title: getMonth(2),
         key: "month3",
         dataIndex: "month3",
+        render: (_, record) => {
+            if (record.isCategory) {
+                return (<span style={{ fontWeight: "bold", textTransform: "uppercase" }}>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(record.month3))}</span>)
+            }
+            return (<span>{new Intl.NumberFormat("pt-BR").format(Number(record.month3))}</span>)
+        }
     },
     {
         title: getMonth(3),
         key: "month4",
         dataIndex: "month4",
+        render: (_, record) => {
+            if (record.isCategory) {
+                return (<span style={{ fontWeight: "bold", textTransform: "uppercase" }}>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(record.month4))}</span>)
+            }
+            return (<span>{new Intl.NumberFormat("pt-BR").format(Number(record.month4))}</span>)
+        }
     },
     {
         title: getMonth(4),
         key: "month5",
         dataIndex: "month5",
+        render: (_, record) => {
+            if (record.isCategory) {
+                return (<span style={{ fontWeight: "bold", textTransform: "uppercase" }}>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(record.month5))}</span>)
+            }
+            return (<span>{new Intl.NumberFormat("pt-BR").format(Number(record.month5))}</span>)
+        }
     },
     {
         title: getMonth(5),
         key: "month6",
         dataIndex: "month6",
+        render: (_, record) => {
+            if (record.isCategory) {
+                return (<span style={{ fontWeight: "bold", textTransform: "uppercase" }}>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(record.month6))}</span>)
+            }
+            return (<span>{new Intl.NumberFormat("pt-BR").format(Number(record.month6))}</span>)
+        }
     },
     {
         title: "Total",
         key: "total",
-        dataIndex: "total"
+        dataIndex: "total",
+        render: (_, record) => {
+            if (record.isCategory) {
+                return (<span style={{ fontWeight: "bold", textTransform: "uppercase" }}>{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(record.total))}</span>)
+            }
+            return (<span>{new Intl.NumberFormat("pt-BR").format(Number(record.total))}</span>)
+        }
     }
 ]
 

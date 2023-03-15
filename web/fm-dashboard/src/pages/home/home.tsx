@@ -53,6 +53,7 @@ const Home: React.FC = () => {
         <Router>
             <Layout>
                 {isAuthenticated && <Sider
+                    style={{height: 3000}}
                     breakpoint="lg"
                     collapsedWidth="0"
                     onBreakpoint={(broken) => {
