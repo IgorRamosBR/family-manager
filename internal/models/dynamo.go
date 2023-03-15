@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 type Transaction struct {
 	TransactionId         string  `json:"transactionId" dynamo:"TransactionId"`
 	CategoryTransactionId string  `json:"-" dynamo:"CategoryTransactionId"`
@@ -12,8 +14,16 @@ type Transaction struct {
 	PaymentMethod         string  `json:"paymentMethod" dynamo:"PaymentMethod"`
 }
 
+func (t Transaction) GetParentCategory() string {
+	return strings.Split(t.Category, " - ")[0]
+}
+
 type Category struct {
 	Name     string `json:"name" dynamo:"Name"`
 	Type     string `json:"type" dynamo:"Type"`
 	Priority int    `json:"priority" dynamo:"Priority"`
+}
+
+func (c Category) GetParentCategory() string {
+	return strings.Split(c.Name, " - ")[0]
 }
