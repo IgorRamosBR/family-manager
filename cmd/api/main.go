@@ -41,6 +41,7 @@ func main() {
 	http.HandleFunc("/transactions", api.handleTransactions)
 	http.HandleFunc("/report", api.handleReport)
 	http.HandleFunc("/categories", api.handleCategories)
+	http.HandleFunc("/categories/order", api.handleCategoriesOrder)
 
 	err = http.ListenAndServe(":3333", nil)
 	if err != nil {
@@ -49,6 +50,10 @@ func main() {
 }
 
 func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
+	setupCORS(&w, r)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 	if r.Method == "GET" {
 		req := createRequest(r)
 		resp, err := h.transactionHandler.GetTransactions(req)
@@ -56,9 +61,9 @@ func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, err.Error())
 			return
 		}
-		for k, v := range resp.Headers {
-			w.Header().Add(k, v)
-		}
+		// for k, v := range resp.Headers {
+		// 	w.Header().Add(k, v)
+		// }
 		io.WriteString(w, resp.Body)
 	}
 
@@ -76,7 +81,17 @@ func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func setupCORS(w *http.ResponseWriter, req *http.Request) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+}
+
 func (h API) handleReport(w http.ResponseWriter, r *http.Request) {
+	setupCORS(&w, r)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 	if r.Method == "GET" {
 		req := createRequest(r)
 		resp, err := h.transactionHandler.ReportTransactions(req)
@@ -89,6 +104,10 @@ func (h API) handleReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h API) handleCategories(w http.ResponseWriter, r *http.Request) {
+	setupCORS(&w, r)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
 	if r.Method == "GET" {
 		req := createRequest(r)
 		resp, err := h.categoryHandler.GetCategories(req)
@@ -96,6 +115,7 @@ func (h API) handleCategories(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, err.Error())
 			return
 		}
+
 		io.WriteString(w, resp.Body)
 	}
 	if r.Method == "POST" {
@@ -105,6 +125,23 @@ func (h API) handleCategories(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, err.Error())
 			return
 		}
+		io.WriteString(w, resp.Body)
+	}
+}
+
+func (h API) handleCategoriesOrder(w http.ResponseWriter, r *http.Request) {
+	setupCORS(&w, r)
+	if (*r).Method == "OPTIONS" {
+		return
+	}
+	if r.Method == "POST" {
+		req := createRequest(r)
+		resp, err := h.categoryHandler.UpdateCategoryListOrder(req)
+		if err != nil {
+			io.WriteString(w, err.Error())
+			return
+		}
+
 		io.WriteString(w, resp.Body)
 	}
 }

@@ -22,6 +22,9 @@ remove-backend-dev:
 remove-backend-staging:
 	AUTH0_DOMAIN=controlefamiliar-staging.us.auth0.com AUTH0_AUDIENCE=ControleFamiliarAPI serverless remove  --aws-profile PERSONAL --stage staging
 
+run-frontend:
+	cd web/fm-finances && npm start
+
 deploy-frontend-staging:
 	cd web/fm-dashboard && npm run build-staging && npm run deploy-staging
 

@@ -37,14 +37,14 @@ type CategoryRequest struct {
 	Priority int          `json:"priority"`
 }
 
-func (t TransactionRequest) ToDynamoModel() Transaction {
+func (t TransactionRequest) ToDynamoModel(category Category) Transaction {
 	return Transaction{
 		Category:      t.Category.Name,
 		Value:         t.Value,
 		Description:   t.Description,
 		MonthYear:     t.MonthYear,
 		Date:          t.Date,
-		Type:          string(t.Type),
+		Type:          string(category.Type),
 		PaymentMethod: string(t.PaymentMethod),
 	}
 }
@@ -63,10 +63,6 @@ func (t TransactionRequest) Validate() error {
 	}
 
 	if err := validateDate(t.Date); err != nil {
-		return err
-	}
-
-	if err := validateTransactionType(t.Type); err != nil {
 		return err
 	}
 
@@ -105,15 +101,6 @@ func validateDate(date string) error {
 	}
 
 	return nil
-}
-
-func validateTransactionType(transactionType Type) error {
-	switch transactionType {
-	case TypeIncome, TypeExpense:
-		return nil
-	default:
-		return errors.New("type should be INCOME or EXPENSE")
-	}
 }
 
 func validatePaymentMethod(paymentMethod PaymentMethod) error {

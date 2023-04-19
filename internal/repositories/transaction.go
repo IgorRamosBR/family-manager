@@ -27,12 +27,8 @@ type transactionRepository struct {
 
 type QueryParameters struct {
 	Period           string
-	Offset           string
+	LastEvaluatedKey string
 	Limit            int32
-	lastEvaluatedKey map[string]types.AttributeValue
-}
-type paginateID struct {
-	ID string `dynamodbav:"id" json:"id"`
 }
 
 func NewTransactionRepository(db *dynamodb.Client, tableName string) TransactionRepository {
@@ -66,52 +62,58 @@ func (r transactionRepository) CreateTransaction(transaction models.Transaction)
 }
 
 func (r transactionRepository) GetTransactions(params QueryParameters) (page models.Page, err error) {
-	if params.Offset != "" {
-		lastKey := paginateID{ID: params.Offset}
-		key, err := attributevalue.MarshalMap(lastKey)
+	var lastEvaluatedKey map[string]types.AttributeValue
+
+	if params.LastEvaluatedKey != "" {
+		lastEvaluatedKey, err = models.DecodeLastEvaluatedKey(params.LastEvaluatedKey)
 		if err != nil {
-			log.Error("Failed to marshal last evaluated key, error: %s", err.Error())
+			log.Error("Failed to decode last evaluated key, error: %s", err.Error())
 			return models.Page{}, err
 		}
-		params.lastEvaluatedKey = key
 	}
 
 	if params.Limit == 0 {
 		params.Limit = DEFAULT_LIMIT
 	}
 
-	scanInput := &dynamodb.ScanInput{
-		TableName:        aws.String(r.tableName),
-		Limit:            aws.Int32(params.Limit),
-		FilterExpression: aws.String("MonthYear = :period"),
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":period": &types.AttributeValueMemberS{Value: params.Period},
-		},
-		ExclusiveStartKey: params.lastEvaluatedKey,
+	keyConditionExpression := "MonthYear = :period"
+	expressionAttributeValues := map[string]types.AttributeValue{
+		":period": &types.AttributeValueMemberS{Value: params.Period},
 	}
-	scanOutput, err := r.db.Scan(context.TODO(), scanInput)
+
+	queryInput := &dynamodb.QueryInput{
+		TableName:                 aws.String(r.tableName),
+		Limit:                     aws.Int32(params.Limit),
+		KeyConditionExpression:    &keyConditionExpression,
+		ExpressionAttributeValues: expressionAttributeValues,
+		ExclusiveStartKey:         lastEvaluatedKey,
+	}
+	queryOutput, err := r.db.Query(context.TODO(), queryInput)
 	if err != nil {
 		log.Error("Failed to scan transactions, error: %s", err.Error())
 		return models.Page{}, err
 	}
 
-	transactions := make([]models.Transaction, scanOutput.Count)
-	err = attributevalue.UnmarshalListOfMaps(scanOutput.Items, &transactions)
+	transactions := make([]models.Transaction, queryOutput.Count)
+	err = attributevalue.UnmarshalListOfMaps(queryOutput.Items, &transactions)
 	if err != nil {
 		log.Error("Failed to unmarshal transaction results, error: %s", err.Error())
 		return models.Page{}, err
 	}
 
-	nextKey := paginateID{}
-	err = attributevalue.UnmarshalMap(scanOutput.LastEvaluatedKey, &nextKey)
+	encodedLastEvaluateKey, err := models.EncodeLastEvaluateKey(queryOutput.LastEvaluatedKey)
 	if err != nil {
-		log.Error("Failed to unmarshal next key, error: %s", err.Error())
+		log.Error("Failed to encoded lastEvaluateKey, error: %s", err.Error())
 		return models.Page{}, err
 	}
 
+	if encodedLastEvaluateKey == params.LastEvaluatedKey {
+		encodedLastEvaluateKey = ""
+	}
+
 	page = models.Page{
-		Results: transactions,
-		Next:    nextKey.ID,
+		Results:          transactions,
+		LastEvaluatedKey: encodedLastEvaluateKey,
 	}
 	return page, nil
 }

@@ -21,12 +21,12 @@ func (h TransactionHandler) CreateTransaction(req events.APIGatewayProxyRequest)
 		return utils.CreateErrorResponse(http.StatusBadRequest, err), nil
 	}
 
-	_, err = h.categoryRepository.GetCategory(transactionRequest.Category.Name, transactionRequest.Category.Priority)
+	category, err := h.categoryRepository.GetCategory(transactionRequest.Category.Name, transactionRequest.Category.Priority)
 	if err != nil {
 		return utils.CreateErrorResponse(http.StatusBadRequest, err), nil
 	}
 
-	transaction := transactionRequest.ToDynamoModel()
+	transaction := transactionRequest.ToDynamoModel(category)
 
 	err = h.transactionRepository.CreateTransaction(transaction)
 	if err != nil {

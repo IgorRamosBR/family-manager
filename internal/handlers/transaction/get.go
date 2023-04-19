@@ -25,9 +25,9 @@ func (h TransactionHandler) GetTransactions(req events.APIGatewayProxyRequest) (
 	}
 
 	queryParams := repositories.QueryParameters{
-		Period: period,
-		Offset: offset,
-		Limit:  limit,
+		Period:           period,
+		LastEvaluatedKey: offset,
+		Limit:            limit,
 	}
 
 	page, err := h.transactionRepository.GetTransactions(queryParams)
