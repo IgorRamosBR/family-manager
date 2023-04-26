@@ -26,7 +26,7 @@ run-frontend:
 	cd web/fm-finances && npm start
 
 deploy-frontend-staging:
-	cd web/fm-dashboard && npm run build-staging && npm run deploy-staging
+	cd web/fm-finances && npm run build-staging && npm run deploy-staging
 
 deploy-frontend-prod:
-	cd web/fm-dashboard && npm run build-prod && npm run deploy-prod
+	cd web/fm-finances && npm run build-prod && npm run deploy-prod
