@@ -45,6 +45,7 @@ func (h TransactionHandler) ReportTransactions(req events.APIGatewayProxyRequest
 		Headers: map[string]string{
 			"Content-type":                     "application/json",
 			"Access-Control-Allow-Origin":      "*",
+			"Access-Control-Allow-Headers":     "*",
 			"Access-Control-Allow-Credentials": "true",
 		},
 	}, nil

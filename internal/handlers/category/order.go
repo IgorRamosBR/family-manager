@@ -30,6 +30,7 @@ func (h CategoryHandler) UpdateCategoryListOrder(req events.APIGatewayProxyReque
 		StatusCode: http.StatusOK,
 		Headers: map[string]string{
 			"Access-Control-Allow-Origin":      "*",
+			"Access-Control-Allow-Headers":     "*",
 			"Access-Control-Allow-Credentials": "true",
 		},
 	}, nil

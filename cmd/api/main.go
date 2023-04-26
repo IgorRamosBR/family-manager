@@ -158,11 +158,16 @@ func createRequest(r *http.Request) events.APIGatewayProxyRequest {
 		log.Fatal(err)
 	}
 
+	headers := map[string]string{}
+	for k, v := range r.Header {
+		headers[k] = v[0]
+	}
+
 	req := events.APIGatewayProxyRequest{
 		Resource:                        "",
 		Path:                            "",
 		HTTPMethod:                      "",
-		Headers:                         map[string]string{},
+		Headers:                         headers,
 		MultiValueHeaders:               map[string][]string{},
 		QueryStringParameters:           queryParams,
 		MultiValueQueryStringParameters: params,

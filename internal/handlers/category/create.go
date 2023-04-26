@@ -33,6 +33,7 @@ func (h CategoryHandler) CreateCategory(req events.APIGatewayProxyRequest) (even
 		StatusCode: http.StatusCreated,
 		Headers: map[string]string{
 			"Access-Control-Allow-Origin":      "*",
+			"Access-Control-Allow-Headers":     "*",
 			"Access-Control-Allow-Credentials": "true",
 		},
 	}, nil

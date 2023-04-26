@@ -50,9 +50,9 @@ func (h TransactionHandler) GetTransactions(req events.APIGatewayProxyRequest) (
 		StatusCode: http.StatusOK,
 		Body:       responseBody,
 		Headers: map[string]string{
-			"Content-type":                     "application/json",
-			"Access-Control-Allow-Origin":      "*",
-			"Access-Control-Allow-Credentials": "true",
+			"Content-type":                 "application/json",
+			"Access-Control-Allow-Origin":  "*",
+			"Access-Control-Allow-Headers": "*",
 		},
 	}, nil
 }
