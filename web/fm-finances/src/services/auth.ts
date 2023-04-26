@@ -1,6 +1,6 @@
 function getToken(): string {
-    const token = localStorage.getItem('token')
-    const tokenTime = localStorage.getItem('tokenTime')
+    const token = sessionStorage.getItem('token')
+    const tokenTime = sessionStorage.getItem('tokenTime')
 
     if (!token) {
         return ''

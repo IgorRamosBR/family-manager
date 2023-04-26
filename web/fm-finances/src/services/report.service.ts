@@ -3,18 +3,14 @@ import { monthCodes } from "src/utils/utils";
 import { Auth } from "./auth";
 
 const URL = `${process.env.REACT_APP_API_SERVER_URL}/report`;
-const defaultOptions = {
-    headers: {
-        'Authorization': Auth.getToken(),
-        'Content-Type': 'application/json',
-    },
-};
 
 async function getReport(): Promise<CategoryReportModel[]> {
     let periods = getCurrentSixMonths()
     return fetch(`${URL}?periods=${periods.join(",")}`, {
         method: 'GET',
-        ...defaultOptions
+        headers: {
+            'Authorization': Auth.getToken(),
+        }
     })
         .then(response => response.json())
         .then(response => { return response as CategoryReportModel[] })

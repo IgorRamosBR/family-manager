@@ -17,7 +17,7 @@ export const PageLayout: React.FC<Props> = ({ children }) => {
   if (!isAuthenticated) {
     loginWithRedirect({
       appState: {
-        returnTo: "/report",
+        returnTo: "/callback",
       },
       authorizationParams: {
         prompt: "login",

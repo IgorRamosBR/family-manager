@@ -4,17 +4,13 @@ import { Auth } from "./auth";
 import dayjs from 'dayjs';
 
 const URL = `${process.env.REACT_APP_API_SERVER_URL}/transactions`;
-const defaultOptions = {
-    headers: {
-        'Authorization': Auth.getToken(),
-        'Content-Type': 'application/json',
-    },
-};
 
 async function getTransactions(period: string, offset: string): Promise<TransactionPageModel> {
     return fetch(`${URL}?period=${period}&offset=${offset}`, {
         method: 'GET',
-        ...defaultOptions
+        headers: {
+            'Authorization': Auth.getToken(),
+        }
     })
         .then(response => response.json())
         .then(response => { return response as TransactionPageModel })
@@ -28,7 +24,10 @@ async function createTransaction(transaction: TransactionModel) {
     let response = await fetch(URL, {
         method: 'POST',
         body: JSON.stringify(transaction),
-        ...defaultOptions
+        headers: {
+            'Authorization': Auth.getToken(),
+            'Content-Type': 'application/json'
+        }
     })
 
     if (!response?.ok) {
@@ -59,7 +58,6 @@ async function getLatestTransactions(): Promise<TransactionModel[]> {
 }
 
 async function getSixMonthsTransactions(): Promise<TransactionModel[]> {
-    console.log('passei aqui')
     const year = new Date().getFullYear();
     const months = getCurrentSixMonths();
 
