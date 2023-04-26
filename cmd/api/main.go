@@ -50,8 +50,8 @@ func main() {
 }
 
 func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
-	setupCORS(&w, r)
 	if (*r).Method == "OPTIONS" {
+		setupCORS(&w, r)
 		return
 	}
 	if r.Method == "GET" {
@@ -61,9 +61,9 @@ func (h API) handleTransactions(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, err.Error())
 			return
 		}
-		// for k, v := range resp.Headers {
-		// 	w.Header().Add(k, v)
-		// }
+		for k, v := range resp.Headers {
+			w.Header().Add(k, v)
+		}
 		io.WriteString(w, resp.Body)
 	}
 
@@ -104,8 +104,8 @@ func (h API) handleReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h API) handleCategories(w http.ResponseWriter, r *http.Request) {
-	setupCORS(&w, r)
 	if (*r).Method == "OPTIONS" {
+		setupCORS(&w, r)
 		return
 	}
 	if r.Method == "GET" {
@@ -115,7 +115,9 @@ func (h API) handleCategories(w http.ResponseWriter, r *http.Request) {
 			io.WriteString(w, err.Error())
 			return
 		}
-
+		for k, v := range resp.Headers {
+			w.Header().Add(k, v)
+		}
 		io.WriteString(w, resp.Body)
 	}
 	if r.Method == "POST" {
